@@ -1,0 +1,17 @@
+{
+    "name": "lnzmst.staruml-smgen",
+    "title": "C++ State Machine Generator",
+    "description": "A C++ Code Generator for UML State Machines",
+    "homepage": "https://github.com/lnzmst/staruml-smgen",
+    "keywords": [ "StarUML", "UML", "State Machine", "State Design Pattern", "C++" ],
+    "version": "0.0.1",
+    "author": {
+        "name": "Lorenzo Musto",
+        "email": "lnz.mst@gmail.com",
+        "url": "https://github.com/lnzmst"
+    },
+    "license": "MIT License",
+    "engines": {
+        "staruml": ">=2.0.0"
+    }
+}

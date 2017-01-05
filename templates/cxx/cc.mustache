@@ -1,0 +1,125 @@
+/**
+ * Copyright (c) 2017 Lorenzo Musto (lnz.mst@gmail.com - https://github.com/lnzmst)
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+#include "{{#smNameSpaces}}{{.}}/{{/smNameSpaces}}{{smName}}.h"
+
+#include <iostream>
+
+{{#smNameSpaces}}
+
+namespace {{.}} {
+{{/smNameSpaces}}
+
+iInterface::~iInterface()
+{}
+
+iPlugIn::~iPlugIn()
+{}
+
+iState::~iState()
+{}
+
+{{#smTriggers}}
+void iState::{{.}}( {{smName}} *sm ) {
+  (void )sm;
+  std::cout << "Unexpected event " << __FUNCTION__ << std::endl;
+}
+
+{{/smTriggers}}
+{{smName}}::{{smName}}( iState *state, iPlugIn *plugin )
+  : _state( state )
+  , _plugin( plugin )
+{}
+
+{{#smTriggers}}
+void {{smName}}::{{.}}() {
+  _state->{{.}}( this );
+}
+{{/smTriggers}}
+
+void {{smName}}::state( iState *s )
+{
+  _state = s;
+}
+
+{{#smGuards}}
+bool {{smName}}::{{.}}() {
+  // add here your implementation for {{.}}()
+  return false;
+}
+
+{{/smGuards}}
+{{#smEffects}}
+void {{smName}}::{{.}}() {
+  if (_plugin)
+    _plugin->{{.}}( this );
+}
+
+{{/smEffects}}
+{{#smStates}}
+{{stateName}}::{{stateName}}()
+{}
+
+{{#stateTransitions}}
+void {{stateName}}::{{triggerName}}( {{smName}} *sm )
+{
+{{#triggerTargets}}
+{{#transitionGuard}}
+  if (sm->{{transitionGuard}}()) {
+{{/transitionGuard}}
+{{^transitionGuard}}
+  if (true) {
+{{/transitionGuard}}
+{{#transitionEffects}}
+    sm->{{.}}();
+{{/transitionEffects}}
+    sm->state( Singleton<{{transitionTarget}}>::instance() );
+    return;
+  }
+{{/triggerTargets}}
+}
+
+{{/stateTransitions}}
+{{/smStates}}
+{{#smNameSpaces}}
+} // namespace {{.}} {
+{{/smNameSpaces}}
+
+#ifdef TEST_SM
+class PlugIn: public {{#smNameSpaces}}{{.}}::{{/smNameSpaces}}iPlugIn {
+public:
+{{#smEffects}}
+  void {{.}}( {{#smNameSpaces}}{{.}}::{{/smNameSpaces}}{{smName}} *sm ) override {
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
+  }
+{{/smEffects}}
+};
+
+int main( int argc, char **argv )
+{
+  PlugIn plugin;
+  {{#smNameSpaces}}{{.}}::{{/smNameSpaces}}{{smName}} sm( Singleton<{{#smNameSpaces}}{{.}}::{{/smNameSpaces}}{{#smStates}}{{firstState}}{{/smStates}}>::instance(), &plugin );
+  sm.{{#smStates}}{{firstTrigger}}{{/smStates}}();
+  return 0;
+}
+#endif // #ifdef TEST_SM
