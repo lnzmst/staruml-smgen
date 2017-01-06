@@ -41,26 +41,28 @@ define( function( require, exports, module ) {
 
 		var result = new $.Deferred();
 
-		var data = {
-			smNameSpaces: [],
-			smTriggers: [],
-			smEffects: [],
-			smGuards: [],
-			smStates: []
-		};
-
-		var cache = {
-			_firstState: "",
-			firstState: function () { if (cache._firstState === "") { cache._firstState = this.stateName; return cache._firstState; } },
-			_firstTrigger: "",
-			firstTrigger: function () { if (cache._firstTrigger === "") { cache._firstTrigger = data.smTriggers[0]; return cache._firstTrigger; } }
-		};
-
 		[ "@UMLInterface", "@UMLClass", "@UMLStateMachine" ].forEach( function( umltype ) {
+
 			var elements = Repository.select( umltype );
 			elements.forEach( function( elem ) {
 
 				if (elem instanceof type.UMLStateMachine) {
+
+					var data = {
+						smNameSpaces: [],
+						smTriggers: [],
+						smEffects: [],
+						smGuards: [],
+						smStates: []
+					};
+
+					var cache = {
+						_firstState: "",
+						firstState: function () { if (cache._firstState === "") { cache._firstState = this.stateName; return cache._firstState; } },
+						_firstTrigger: "",
+						firstTrigger: function () { if (cache._firstTrigger === "") { cache._firstTrigger = data.smTriggers[0]; return cache._firstTrigger; } }
+					};
+
 					console.log( "Parsing " + elem.name + ' ' + elem.constructor.name );
 					console.log( elem );
 					data.smName = elem.name;
@@ -79,7 +81,7 @@ define( function( require, exports, module ) {
 
 					elem.regions.forEach( function( region ) {
 						region.vertices.forEach( function( vertex ) {
-							if (vertex instanceof type.UMLState) {
+							if (vertex instanceof type.UMLState || vertex instanceof type.UMLFinalState) {
 								console.log( vertex );
 								var state = {};
 								state.stateName = vertex.name;
@@ -150,73 +152,74 @@ define( function( require, exports, module ) {
 							}
 						})
 					})
+
+					var outdir = FileUtils.getDirectoryPath( ProjectManager.getFilename() );
+
+					var smpath = "src/";
+					data.smNameSpaces.forEach( function ( item ) {
+						smpath += item + '/';
+					});
+
+					var fullPath = outdir + smpath;
+					var directory = FileSystem.getDirectoryForPath( fullPath );
+					directory.create( function( err, stat ) {
+						if (!err || err === "AlreadyExists") {
+							console.log( "mkdir: " + fullPath );
+							Toast.info( "mkdir: " + fullPath );
+						} else {
+							console.error( err );
+							Toast.error( err );
+							result.reject( err );
+							return result.promise();
+						}
+					});
+
+					var cxxPrefs = SMGenPrefs.getCxxPrefs();
+					var parms = [
+						{
+							extension: 'h',
+							template: cxxPrefs.template_h
+						},
+						{
+							extension: 'cc',
+							template: cxxPrefs.template_cc
+						}
+					];
+
+					parms.forEach( function( parm ) {
+
+						var file = FileSystem.getFileForPath( parm.template );
+						FileUtils.readAsText( file )
+							.fail( function( err ) {
+								console.error( err );
+								Toast.error( err );
+								result.reject( error );
+								return result.promise();
+							})
+							.done( function( text ) {
+								console.log( data );
+								var outtext = Mustache.render( text, data );
+								var outfile = FileSystem.getFileForPath( fullPath + data.smName + '.' + parm.extension );
+								var allowBlindWrite = true;
+								FileUtils.writeText( outfile, outtext, allowBlindWrite )
+									.done( function() {
+										console.log( 'Wrote ' + fullPath + data.smName + '.' + parm.extension );
+										console.log( outtext );
+										Toast.info( 'Wrote ' + fullPath + data.smName + '.' + parm.extension );
+									})
+									.fail( function( error ) {
+										console.error( error );
+										Toast.error( error );
+										result.reject( error );
+										return result.promise();
+									})
+							})
+
+					})
+
 				}
 
 			})
-		})
-
-		var outdir = FileUtils.getDirectoryPath( ProjectManager.getFilename() );
-
-		var smpath = "src/";
-		data.smNameSpaces.forEach( function ( item ) {
-			smpath += item + '/';
-		});
-
-		var fullPath = outdir + smpath;
-		var directory = FileSystem.getDirectoryForPath( fullPath );
-        directory.create( function( err, stat ) {
-			if (!err || err === "AlreadyExists") {
-				console.log( "mkdir: " + fullPath );
-				Toast.info( "mkdir: " + fullPath );
-			} else {
-				console.error( err );
-				Toast.error( err );
-				result.reject( err );
-				return result.promise();
-            }
-		});
-
-		var cxxPrefs = SMGenPrefs.getCxxPrefs();
-		var parms = [
-			{
-				extension: 'h',
-				template: cxxPrefs.template_h
-			},
-			{
-				extension: 'cc',
-				template: cxxPrefs.template_cc
-			}
-		];
-
-		parms.forEach( function( parm ) {
-
-			var file = FileSystem.getFileForPath( parm.template );
-			FileUtils.readAsText( file )
-				.fail( function( err ) {
-					console.error( err );
-					Toast.error( err );
-					result.reject( error );
-					return result.promise();
-				})
-				.done( function( text ) {
-					console.log( data );
-					var outtext = Mustache.render( text, data );
-					var outfile = FileSystem.getFileForPath( fullPath + data.smName + '.' + parm.extension );
-					var allowBlindWrite = true;
-					FileUtils.writeText( outfile, outtext, allowBlindWrite )
-						.done( function() {
-							console.log( 'Wrote ' + fullPath + data.smName + '.' + parm.extension );
-							console.log( outtext );
-							Toast.info( 'Wrote ' + fullPath + data.smName + '.' + parm.extension );
-						})
-						.fail( function( error ) {
-							console.error( error );
-							Toast.error( error );
-							result.reject( error );
-							return result.promise();
-						})
-				})
-
 		})
 
 		result.resolve();
