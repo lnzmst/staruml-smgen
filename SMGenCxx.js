@@ -88,7 +88,7 @@ define( function( require, exports, module ) {
 								state.stateTransitions = [];
 								state.firstState = cache.firstState;
 								state.firstTrigger = cache.firstTrigger;
-								state.statePublic = function() {
+								state.state_hasPublic = function() {
 									if (this.stateTransitions.length > 0) {
 										return true;
 									}

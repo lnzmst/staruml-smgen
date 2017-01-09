@@ -83,8 +83,10 @@ class {{stateName}}: public iState {
 private:
   friend Singleton<{{stateName}}>;
   {{stateName}}();
+  {{#state_hasPublic}}
 
 public:
+  {{/state_hasPublic}}
   {{#stateTransitions}}
   void {{triggerName}}( {{smName}} *sm ) override;
   {{/stateTransitions}}
