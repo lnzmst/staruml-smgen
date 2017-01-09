@@ -88,6 +88,11 @@ define( function( require, exports, module ) {
 								state.stateTransitions = [];
 								state.firstState = cache.firstState;
 								state.firstTrigger = cache.firstTrigger;
+								state.statePublic = function() {
+									if (this.stateTransitions.length > 0) {
+										return true;
+									}
+								}
 								var seen = {}
 								region.transitions.forEach( function( transition ) {
 									if (vertex.name === transition.source.name) {

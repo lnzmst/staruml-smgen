@@ -62,6 +62,7 @@ code is defined accordingly with the following schema
 						...
 					]
 				],
+				state_hasPublic: <function>,
 				firstState: <function>,
 				firstTrigger: <function>
 			},
@@ -85,6 +86,7 @@ with keywords or Mustache tags, to be used in templates to drive expansion, desc
 				- transitionGuard the guard enabling the transition
 				- transitionEffects list of opaque behaviour associated with the transition
 				- trasitionTarget the target State of the transition
+		- state_hasPublic returning true if the state has a public section
 		- firstState helper to return the first State name in the list
 		- firstTrigger helper to return the first Trigger in the list
 
@@ -98,8 +100,9 @@ with keywords or Mustache tags, to be used in templates to drive expansion, desc
 		smNameSpaces: [ "sm" ],
 		smStates: [
 			{
-				firstState: function () { if (cache._firstState === "") { cache._firstState = this.stateName; return cache._firstState; } },
-				firstTrigger: function () { if (cache._firstTrigger === "") { cache._firstTrigger = data.smTriggers[0]; return cache._firstTrigger; } },
+				firstState: function () { ... },
+				firstTrigger: function () { ... },
+				state_hasPublic: function () { ... },
 				stateName: "Idle",
 				stateTransitions: [
 					{
@@ -114,8 +117,9 @@ with keywords or Mustache tags, to be used in templates to drive expansion, desc
 				]
 			},
 			{
-				firstState: function () { if (cache._firstState === "") { cache._firstState = this.stateName; return cache._firstState; } },
-				firstTrigger: function () { if (cache._firstTrigger === "") { cache._firstTrigger = data.smTriggers[0]; return cache._firstTrigger; } },
+				firstState: function () { ... },
+				firstTrigger: function () { ... },
+				state_hasPublic: function () { ... },
 				stateName: "Busy",
 				stateTransitions: [
 					{
