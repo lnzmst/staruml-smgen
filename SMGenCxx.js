@@ -85,6 +85,7 @@ define( function( require, exports, module ) {
 								console.log( vertex );
 								var state = {};
 								state.stateName = vertex.name;
+								state._stateDocumentation = vertex.documentation;
 								state.stateTransitions = [];
 								state.firstState = cache.firstState;
 								state.firstTrigger = cache.firstTrigger;
@@ -93,6 +94,19 @@ define( function( require, exports, module ) {
 										return true;
 									}
 								}
+								state.stateDocumentation = function () {
+									var text = this._stateDocumentation;
+									if (_.isString(text) && text.length !== 0) {
+										var docs = "/**\n";
+										var lines = text.trim().split( "\n" );
+										lines.forEach( function (line) { 
+											docs += " * " + line + "\n";
+										})
+										docs += " */";
+										return docs;
+									}
+								}
+
 								var seen = {}
 								region.transitions.forEach( function( transition ) {
 									if (vertex.name === transition.source.name) {
@@ -130,16 +144,40 @@ define( function( require, exports, module ) {
 
 												var t = {
 													triggerName: trigger.name,
-													triggerTargets: []
+													triggerTargets: [],
+													triggerDocumentation: function () {
+														var docs = "";
+														this.triggerTargets.forEach( function (z) {
+															var text = z.transitionDocumentation;
+															if (_.isString(text) && text.length !== 0) {
+																var lines = text.trim().split( "\n" );
+																lines.forEach( function (line) {
+																	docs += "   * " + line + "\n";
+																})
+															}
+														})
+														if (docs.length > 0) {
+															return '/**\n' + docs + "   */";
+														}
+													},
+
 												};
 
 												var target = {
+													transitionDocumentation: "",
 													transitionTarget: transition.target.name,
+													transitionGuard: "",
 													transitionEffects: []
 												};
+
+												if (transition.documentation !== "") {
+													target.transitionDocumentation = transition.documentation;
+												}
+
 												if (transition.guard !== "") {
 													target.transitionGuard = transition.guard;
 												}
+
 												transition.effects.forEach( function( effect ) {
 													target.transitionEffects.push( effect.name );
 												});

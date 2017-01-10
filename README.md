@@ -38,8 +38,8 @@ To activated them they have to be selected in the Configuration menu
 
 ### State Machine Representation
 
-The State Machine representation Mustache will use to drive the template expansion into the actual
-code is defined accordingly with the following schema
+The State Machine representation Mustache will get and use to drive the template expansion
+into the actual code is defined in accordance with the following structure
 
 	{
 		smName: <string>,
@@ -50,17 +50,22 @@ code is defined accordingly with the following schema
 		smEffects: [ <string>, ... ],
 		smStates: [
 			{
-				stateName: "",
+				stateName: <string>,
+				stateDocumentation: <string>,
 				stateTransitions: [
-					triggerName: <string>,
-					triggerTargets: [
-						{
-							transitionGuard: <string>,
-							transitionEffects: [ <string>, ... ],
-							trasitionTarget: <string>
-						},
-						...
-					]
+					{
+						triggerName: <string>,
+						triggerTargets: [
+							{
+								transitionDocumentation: <string>,
+								transitionTarget: <string>,
+								transitionGuard: <string>,
+								transitionEffects: [ <string>, ... ]
+							},
+							...
+						]
+					},
+					...
 				],
 				state_hasPublic: <function>,
 				firstState: <function>,
