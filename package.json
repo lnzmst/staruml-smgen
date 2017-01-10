@@ -4,7 +4,7 @@
     "description": "A C++ Code Generator for UML State Machines",
     "homepage": "https://github.com/lnzmst/staruml-smgen",
     "keywords": [ "StarUML", "UML", "State Machine", "State Design Pattern", "C++", "C#", "C sharp" ],
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": {
         "name": "Lorenzo Musto",
         "email": "lnz.mst@gmail.com",
