@@ -198,7 +198,7 @@ define( function( require, exports, module ) {
 
 					var outdir = FileUtils.getDirectoryPath( ProjectManager.getFilename() );
 
-					var smpath = "src/c++/";
+					var smpath = "src/c#/";
 					data.smNameSpaces.forEach( function ( item ) {
 						smpath += item + '/';
 					});
@@ -217,15 +217,11 @@ define( function( require, exports, module ) {
 						}
 					});
 
-					var cxxPrefs = SMGenPrefs.getCxxPrefs();
+					var csharpPrefs = SMGenPrefs.getCsharpPrefs();
 					var parms = [
 						{
-							extension: 'h',
-							template: cxxPrefs.template_h
-						},
-						{
-							extension: 'cc',
-							template: cxxPrefs.template_cc
+							extension: 'cs',
+							template: csharpPrefs.template_cs
 						}
 					];
 

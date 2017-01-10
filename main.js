@@ -35,14 +35,16 @@ define( function( require, exports, module ) {
 		ProjectManager = app.getModule( "engine/ProjectManager" );
 
 	var SMGenCxx       = require( "SMGenCxx" ),
+		SMGenCsharp    = require( "SMGenCsharp" ),
 		SMGenPrefs     = require( "SMGenPrefs" );
 
     /**
      * Command IDs
      */
-    var CMD_SMGEN       = 'smgen',
-        CMD_SMGEN_CXX   = 'smgen.cxx',
-        CMD_SMGEN_PREFS = 'smgen.prefs';
+    var CMD_SMGEN        = 'smgen',
+        CMD_SMGEN_CXX    = 'smgen.cxx',
+		CMD_SMGEN_CSHARP = 'smgen.csharp',
+        CMD_SMGEN_PREFS  = 'smgen.prefs';
 
     /**
      * Command Handler for C++ Generator
@@ -56,19 +58,28 @@ define( function( require, exports, module ) {
         return result.promise();
     }
 
+    function _handleGenerateCsharp() {
+		console.log( "Generate C# ..." );
+        var result = new $.Deferred();
+		SMGenCsharp.generate().then( result.resolve, result.reject );
+        return result.promise();
+	}
+
     function _handlePrefs() {
 		console.log( "Configure SMGen ..." );
         CommandManager.execute( Commands.FILE_PREFERENCES, SMGenPrefs.getId() );
     }
 
-    CommandManager.register( "State Machine Generator", CMD_SMGEN,       CommandManager.doNothing );
-    CommandManager.register( "C++ ...",                 CMD_SMGEN_CXX,   _handleGenerateCxx );
+    CommandManager.register( "State Machine Generator", CMD_SMGEN, CommandManager.doNothing );
+    CommandManager.register( "C++ ...",                 CMD_SMGEN_CXX, _handleGenerateCxx );
+    CommandManager.register( "C# ...",                  CMD_SMGEN_CSHARP, _handleGenerateCsharp );
     CommandManager.register( "Configure...",            CMD_SMGEN_PREFS, _handlePrefs );
 
     var menu, menuItem;
     menu = MenuManager.getMenu( Commands.TOOLS );
     menuItem = menu.addMenuItem( CMD_SMGEN );
     menuItem.addMenuItem( CMD_SMGEN_CXX );
+    menuItem.addMenuItem( CMD_SMGEN_CSHARP );
     menuItem.addMenuDivider();
     menuItem.addMenuItem( CMD_SMGEN_PREFS );
 });

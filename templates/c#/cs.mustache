@@ -1,0 +1,144 @@
+/**
+ * Copyright (c) 2017 Lorenzo Musto (lnz.mst@gmail.com - https://github.com/lnzmst)
+ *
+ * MIT License
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+using System;
+
+{{#smNameSpaces}}
+
+namespace {{.}} {
+{{/smNameSpaces}}
+
+abstract class iInterface {
+{{#smTriggers}}
+  abstract public void {{.}}();
+{{/smTriggers}}
+}
+
+abstract class iPlugIn {
+{{#smEffects}}
+  public abstract void {{.}}( {{smName}} sm );
+{{/smEffects}}
+}
+
+abstract class iState {
+{{#smTriggers}}
+  public abstract void {{.}}( {{smName}} sm );
+{{/smTriggers}}
+};
+
+class {{smName}}: iInterface {
+  private iState _state;
+  // private iPlugIn _plugin;
+
+  public {{smName}}( iState state/*, iPlugIn plugin*/ ) {
+    this._state = state;
+    //this._plugin = plugin;
+  }
+
+{{#smTriggers}}
+  public override void {{.}}() {
+    _state.{{.}}( this );
+  }
+{{/smTriggers}}
+
+  public void state( iState s ) {
+    Console.WriteLine( _state.GetType().Name + " -> " + s.GetType().Name );
+    _state = s;
+  }
+
+{{#smGuards}}
+  public bool {{.}}() {
+  }
+{{/smGuards}}
+{{#smEffects}}
+  public void {{.}}() {
+  }
+{{/smEffects}}
+}
+
+class State: iState {
+{{#smTriggers}}
+  public override void {{.}}( {{smName}} sm ) {
+    Console.WriteLine( this.GetType().Name + ": unrecognized {{.}}() event" );
+  }
+{{/smTriggers}}
+};
+
+{{#smStates}}
+{{&stateDocumentation}}
+sealed class {{stateName}}: State {
+
+  private static readonly {{stateName}} _instance = new {{stateName}}();
+
+  // Explicit static constructor to tell C# compiler
+  // not to mark type as beforefieldinit
+  static {{stateName}}() {
+  }
+
+  private {{stateName}}() {
+  }
+
+  public static {{stateName}} instance
+  {
+    get {
+      return _instance;
+    }
+  }
+
+{{#stateTransitions}}
+  {{&triggerDocumentation}}
+  public override void {{triggerName}}( {{smName}} sm ) {
+  {{#triggerTargets}}
+    {{#transitionGuard}}
+    if (sm.{{transitionGuard}}()) {
+    {{/transitionGuard}}
+    {{^transitionGuard}}
+    if (true) {
+    {{/transitionGuard}}
+      {{#transitionEffects}}
+      sm.{{.}}();
+	  {{/transitionEffects}}
+      sm.state( {{transitionTarget}}.instance );
+      return;
+    }
+  {{/triggerTargets}}
+  }
+{{/stateTransitions}}
+}
+
+{{/smStates}}
+
+class MainApp {
+    static void Main()
+	{
+		// Setup context in a state
+		StateMachine sm = new StateMachine( {{#smStates}}{{firstState}}{{/smStates}}.instance );
+
+		// Issue requests, which toggles state
+		sm.{{#smStates}}{{firstTrigger}}{{/smStates}}();
+	}
+}
+
+{{#smNameSpaces}}
+} // namespace {{.}} {
+{{/smNameSpaces}}

@@ -32,8 +32,9 @@ define( function( require, exports, module ) {
 
 	var preferenceId = "smgen";
 
-	var template_h = FileUtils.getNativeModuleDirectoryPath( module ) + "/templates/cxx/h.mustache";
-	var template_cc = FileUtils.getNativeModuleDirectoryPath( module ) + "/templates/cxx/cc.mustache";
+	var template_h = FileUtils.getNativeModuleDirectoryPath( module ) + "/templates/c++/h.mustache";
+	var template_cc = FileUtils.getNativeModuleDirectoryPath( module ) + "/templates/c++/cc.mustache";
+	var template_cs = FileUtils.getNativeModuleDirectoryPath( module ) + "/templates/c#/cs.mustache";
 
     var SMGenPreferences = {
         "smgen.cxx": {
@@ -51,6 +52,16 @@ define( function( require, exports, module ) {
             description: "Path to template used to generate implementations",
             type: "String",
             "default": template_cc
+		},
+        "smgen.csharp": {
+            text: "C# Code Generation",
+            type: "Section"
+        },
+		"smgen.csharp.template_cs": {
+            text: ".cs template",
+            description: "Path to template used to generate modules",
+            type: "String",
+			"default": template_cs
 		}
     };
 
@@ -65,10 +76,17 @@ define( function( require, exports, module ) {
 		};
 	}
 
+	function getCsharpPrefs() {
+		return {
+			template_cs: PreferenceManager.get( "smgen.csharp.template_cs" )
+		};
+	}
+
     AppInit.htmlReady(function () {
         PreferenceManager.register( preferenceId, "State Machine Gen", SMGenPreferences );
     });
 
     exports.getId       = getId;
     exports.getCxxPrefs = getCxxPrefs;
+    exports.getCsharpPrefs = getCsharpPrefs;
 });
